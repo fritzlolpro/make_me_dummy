@@ -12,20 +12,20 @@ module.exports = {
       {
         test: /\.js?x?$/,
         use: [
-          // {
-          //   loader: "babel-loader",
-          //   options: {
-          //     presets: [["@babel/preset-env", { targets: "defaults" }], "@babel/preset-react"],
-          //   },
-          // },
           {
-            loader: "swc-loader",
+            loader: "babel-loader",
             options: {
-              jsc: {
-                parser: { syntax: "ecmascript", jsx: true },
-              },
+              presets: [["@babel/preset-env", { targets: "defaults" }], "@babel/preset-react"],
             },
           },
+          // {
+          //   loader: "swc-loader",
+          //   options: {
+          //     jsc: {
+          //       parser: { syntax: "ecmascript", jsx: true },
+          //     },
+          //   },
+          // },
         ],
         exclude: /node_modules/,
       },

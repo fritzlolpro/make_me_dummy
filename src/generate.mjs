@@ -52,6 +52,31 @@ class ReactJsComponentStringBuilder {
   }
 }
 
+class vanilaJsStringBuilder {
+  constructor(postfix, fileName) {
+    this.postfix = postfix;
+    this.fileName = fileName;
+  }
+
+  getTemplate() {
+    return `
+      export const dummyFunction_${this.postfix} = () => console.log("Hello from ${this.postfix}");
+    `;
+  }
+
+  getUseString() {
+    return `dummyFunction_${this.postfix}() \n`;
+  }
+
+  getImportString() {
+    return `import {dummyFunction_${this.postfix}} from './${this.getFileName()}' \n`;
+  }
+
+  getFileName() {
+    return `${this.fileName}_${this.postfix}.js`;
+  }
+}
+
 class TempalateFactory {
   constructor(name, quantity, Builder) {
     this.quantity = quantity;
@@ -96,9 +121,8 @@ class TempalateFactory {
 (async () => {
   console.log(process.cwd());
 
-  const folder = path.resolve(process.cwd(), "../generated");
   const rootFolder = path.resolve(process.cwd(), "../");
-  const REACT_JS_COMPONENT_QUANTITY = 5;
+  const folder = path.resolve(rootFolder, "./generated");
 
   try {
     await fs.access(folder);
@@ -108,9 +132,15 @@ class TempalateFactory {
 
   const reactComponents = new TempalateFactory(
     "component",
-    10,
+    0,
     ReactJsComponentStringBuilder
   );
+
+  const vanillaJsStuff = new TempalateFactory(
+    "vanillaJsStuff",
+    1000,
+    vanilaJsStringBuilder
+  )
 
   for (let i = 0; i < reactComponents.getGeneratedQuantity(); i++) {
     (async () => {
@@ -123,6 +153,17 @@ class TempalateFactory {
     })();
   }
 
+  for (let i = 0; i < vanillaJsStuff.getGeneratedQuantity(); i++) {
+    (async () => {
+      console.log(vanillaJsStuff.getFileNames())
+      const writer = new FileWriter(
+        path.resolve(folder, vanillaJsStuff.getFileNames()[i]),
+        vanillaJsStuff.getFileTemplates()[i]
+      );
+      await writer.apply();
+    })();
+  }
+
   const indexJS = "index.js";
 
   const indexTemplate = `
@@ -130,6 +171,7 @@ class TempalateFactory {
     import { createRoot } from 'react-dom/client';
 
     ${reactComponents.getImportsTemplate()}
+    ${vanillaJsStuff.getImportsTemplate()}
 
     const test = () => <div className="className penis"> AAAAAAA </div>
     test();
@@ -139,6 +181,9 @@ class TempalateFactory {
         ${reactComponents.getUseTemplate()}
       </div>
     );
+    (() => {
+        ${vanillaJsStuff.getUseTemplate()}
+    })();
 
 `;
 
